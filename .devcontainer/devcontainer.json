@@ -5,22 +5,24 @@
   "containerName": "vol1-first-container",
   "workspaceFolder": "/workspaces",
 
-  // Disables the vsce tools so they don't take over the cpu
-  // Also fixes the dubious ownership error if it appears after the initial build
-  "postStartCommand": "sudo /usr/local/bin/disable-vsce-sign && git config --global --add safe.directory '*'",
+  // Run once on container creation: register a deterministic kernel.
+  "postCreateCommand": "python -m ipykernel install --user --name acme --display-name \"ACME Python\"",
+
+  // Run every start: safe.directory + watchdog (patient: default 300s)
+  "postStartCommand": "git config --global --add safe.directory '*' || true"
+,
 
   "customizations": {
-    // Various VS Code settings
     "vscode": {
       "settings": {
         "terminal.integrated.defaultProfile.linux": "bash",
         "terminal.integrated.profiles.linux": {
-          "bash": {
-            "path": "/bin/bash"
-          }
+          "bash": { "path": "/bin/bash" }
         },
+
         "files.autoSave": "afterDelay",
         "files.autoSaveDelay": 1000,
+
         "files.exclude": {
           "**/.*": true,
           "**/.devcontainer": true,
@@ -36,18 +38,32 @@
           "**/*.pyc": true,
           "**/validate_driver.txt": true
         },
+
         "github.copilot.enable": false,
         "github.copilot-chat.enable": false,
         "extensions.ignoreRecommendations": true,
         "extensions.unwantedRecommendations": [
           "GitHub.copilot",
           "GitHub.copilot-chat"
-        ]
+        ],
+
+        // Critical: stop background extension churn (main driver of corruption/install loops)
+        "extensions.autoUpdate": false,
+        "extensions.autoCheckUpdates": false,
+        "update.mode": "none",
+
+        // Make interpreter/kernel selection predictable
+        "python.defaultInterpreterPath": "/usr/local/bin/python",
+        "python.terminal.activateEnvironment": false,
+        "jupyter.jupyterServerType": "local",
+        "jupyter.defaultKernel": "ACME Python"
       },
-      // Install Extensions upon build
+
       "extensions": [
         "ms-python.python",
         "ms-toolsai.jupyter",
+        "ms-toolsai.jupyter-keymap",
+        "ms-toolsai.jupyter-renderers",
         "ms-azuretools.vscode-docker"
       ]
     }

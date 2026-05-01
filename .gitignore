@@ -77,6 +77,8 @@ htmlcov/
 *.npy
 *.gpkg
 *.db
+Shell1/
+shutdown_vsce.sh
 
 # Image files
 *.png
